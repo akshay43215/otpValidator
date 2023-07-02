@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 
 export const Otp = () => {
     
@@ -12,17 +12,43 @@ export const Otp = () => {
         digitSix : ""
     })
 
+    useEffect(() => {
+      inputRef.current[0].focus()
+      inputRef.current[0].addEventListener("paste",pasteText)
+
+      return ()=> inputRef.current[0].removeEventListener("paste",pasteText)
+      
+    }, [])
+
+    const pasteText = (e)=> {
+        const pastedText = e.clipboardData.getData("text")
+        console.log(pastedText);
+
+        const fieldValues = {};
+        Object.keys(otp).forEach((itm,idx)=> {
+            fieldValues[itm] = pastedText[idx]
+        })
+        console.log(fieldValues);
+        setOtp(fieldValues)
+        inputRef.current[5].focus()
+    }
+    
+
     const handleChange = (e,idx)=> {
        const {name,value}= e.target;
+
+       if (/[a-z]/gi.test(value))   return 
+
         setOtp(prev=> ({
             ...prev,
-            [name]:value
+            [name]:value.slice(-1)
         }))
         if (value && idx<5) {
             inputRef.current[idx+1].focus()
         }
         // e.target.nextSibling.focus()
     }
+
     const handleBack =(e,idx)=> {
         // console.log(e.key);
         if (e.key=='Backspace') {
@@ -37,12 +63,14 @@ export const Otp = () => {
             return(
                 <input 
                 type="text" 
-                ref={elmt=>inputRef.current[idx]=elmt}
-                maxLength='1'
+                //maxLength='1'
                 name={itm} 
                 key={idx} 
+                value={otp[itm]}
+                ref={elmt=>inputRef.current[idx]=elmt}
                 onKeyUp={(e)=>handleBack(e,idx)}
-                className='w-16 h-12 rounded-md mr-3 text-center text-xl' onChange={(e)=>handleChange(e,idx)}/>
+                onChange={(e)=>handleChange(e,idx)}
+                className='w-16 h-12 rounded-md mr-3 text-center text-xl'/>
             )})
     }
     
