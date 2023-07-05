@@ -1,16 +1,37 @@
 import React, { useEffect, useRef, useState } from 'react'
+import { Formik, useFormik } from 'formik'
+
+
+const validate = (values)=> {
+    const errors = {}
+    if (Object.values(values.otp).some((data)=> data==='' )) {
+        errors.otp = 'This field is required !!!'
+    }
+    return errors
+}
 
 export const Otp = () => {
     
     const inputRef = useRef({})
-    const [otp, setOtp] = useState({
-        digitOne : "",
-        digitTwo : "",
-        digitThree : "",
-        digitFour : "",
-        digitFive : "",
-        digitSix : ""
+    const formik =useFormik({
+        initialValues: {
+            otp: Array.from({length:6}).fill("") ,
+            // otp: { digitOne : "", digitTwo : "", digitThree : "", digitFour : "", digitFive : "", digitSix : ""}
+        },
+        validate,
+        onSubmit : (values)=> {
+            console.log(values);
+        }
     })
+    // const [otp, setOtp] = useState({ 
+    //     digitOne : "",
+    //     digitTwo : "",
+    //     digitThree : "",
+    //     digitFour : "",
+    //     digitFive : "",
+    //     digitSix : ""
+    // })
+    console.log(formik.values);
 
     useEffect(() => {
       inputRef.current[0].focus()
@@ -37,12 +58,26 @@ export const Otp = () => {
     const handleChange = (e,idx)=> {
        const {name,value}= e.target;
 
-       if (/[a-z]/gi.test(value))   return 
+       if (/[a-z]/gi.test(value))   return ;
 
-        setOtp(prev=> ({
-            ...prev,
-            [name]:value.slice(-1)
-        }))
+       const currentOtp = [...formik.values.otp ]
+       currentOtp[idx] = value.slice(-1)
+
+       console.log(currentOtp);
+       //formic change handle
+       formik.setValues( prev => ({
+        ...prev,
+        otp : currentOtp
+        // otp: {
+        //     ...prev.otp,
+        //     [name]: value,
+        // },
+       })) 
+
+        // setOtp(prev=> ({
+        //     ...prev,
+        //     [name]:value.slice(-1)
+        // }))
         if (value && idx<5) {
             inputRef.current[idx+1].focus()
         }
@@ -58,31 +93,31 @@ export const Otp = () => {
         }
     }
     const renderInput = ()=> {
-        return Object.keys(otp).map((itm,idx)=> {
-            // console.log(itm,idx);
-            return(
+        return /*Object.keys(otp)*/ formik.values.otp.map((itm,idx)=> (
                 <input 
                 type="text" 
                 //maxLength='1'
-                name={itm} 
+                name={idx} 
                 key={idx} 
-                value={otp[itm]}
+                value={formik.values.otp[idx]}
                 ref={elmt=>inputRef.current[idx]=elmt}
                 onKeyUp={(e)=>handleBack(e,idx)}
                 onChange={(e)=>handleChange(e,idx)}
                 className='w-16 h-12 rounded-md mr-3 text-center text-xl'/>
-            )})
+            ))
     }
     
   return (
-        <div className="otp-container">
-            {
-               renderInput()
-            }
-            <div className="btn-div">
-                <button className='mt-4 w-32 h-10 border border-solid bg-[#18562a] rounded hover:bg-[#14181852] hover:border-[#5b9797]' >Validate</button>
-            </div>
-            
-        </div>
+            <div className="otp-container">
+                <Formik>
+                    <> { renderInput() }</>
+                </Formik>
+                    {formik.errors.otp &&  <p>*** Please fill the fields..........!</p> }
+                   
+                <div className="btn-div">
+                    <button type='button' onClick={formik.handleSubmit} className='mt-4 w-32 h-10 border border-solid bg-[#18562a] rounded hover:bg-[#14181852] hover:border-[#5b9797]' >
+                    Validate </button>
+                </div>
+            </div>            
     )
 }

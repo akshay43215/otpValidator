@@ -3,3 +3,9 @@
   margin: 0 auto;
   text-align: center;
 }
+.app-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  min-height: 100vh;
+}
